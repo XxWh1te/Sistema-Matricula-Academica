@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Matrícula Académica</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-color: #0f172a;
+            --background-color: #f8fafc;
+            --surface-color: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --transition: all 0.2s ease-in-out;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background-color: var(--secondary-color);
+            color: #fff;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .brand i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .user-info .name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: block;
+        }
+
+        .user-info .role {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+        }
+
+        .header-title {
+            margin-bottom: 1.5rem;
+        }
+
+        .header-title h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Student Card Stats */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--surface-color);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            background-color: #eff6ff;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .card-info h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .card-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Grid Layout for Forms and Selected Courses */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--surface-color);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Search Filters */
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input, .select-input {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            outline: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-input:focus, .select-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .data-table th, .data-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* Status & Badges */
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-primary { background: #dbeafe; color: #1e40af; }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background-color: #f1f5f9;
+        }
+
+        .btn-danger-icon {
+            background: transparent;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            padding: 0.4rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .btn-danger-icon:hover {
+            background-color: #fee2e2;
+        }
+
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Cart / Selected Courses Panel */
+        .selected-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .selected-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem;
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+
+        .course-details strong {
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        .course-details span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .checkout-summary {
+            border-top: 1px dashed var(--border-color);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .summary-row.total {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navegación Lateral -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>EduPortal</span>
+            </div>
+            <ul class="nav-list">
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link active">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                        <span>Matrícula</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span>Horarios</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                        <span>Pagos</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="user-profile">
+            <div class="avatar">RE</div>
+            <div class="user-info">
+                <span class="name">Rubén Eufracio</span>
+                <span class="role">Cod: u20261024</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+        
+        <!-- Cabecera -->
+        <header class="header-title">
+            <h1>Matrícula Académica 2026 - II</h1>
+            <p>Selecciona las asignaturas correspondientes a tu plan de estudios para completar tu registro.</p>
+        </header>
+
+        <!-- Métricas Rápidas -->
+        <section class="summary-cards">
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-award"></i></div>
+                <div class="card-info">
+                    <h3>22</h3>
+                    <p>Créditos Permitidos</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-list-check"></i></div>
+                <div class="card-info">
+                    <h3>12</h3>
+                    <p>Créditos Seleccionados</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="card-info">
+                    <h3>IX</h3>
+                    <p>Ciclo Académico</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grid de Contenido -->
+        <div class="dashboard-grid">
+            
+            <!-- Panel Izquierdo: Oferta de Cursos -->
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fa-solid fa-book-open"></i>
+                        Asignaturas Disponibles
+                    </h2>
+                    <span class="badge badge-primary">Plan de Estudios 2022</span>
+                </div>
+
+                <!-- Filtros -->
+                <div class="filter-bar">
+                    <input type="text" class="search-input" placeholder="Buscar por código o curso...">
+                    <select class="select-input">
+                        <option value="">Todos los turnos</option>
+                        <option value="manana">Mañana</option>
+                        <option value="noche">Noche</option>
+                    </select>
+                </div>
+
+                <!-- Tabla de Cursos -->
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Asignatura</th>
+                                <th>Créditos</th>
+                                <th>Horario</th>
+                                <th>Vacantes</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>ASI901</strong></td>
+                                <td>
+                                    Inteligencia de Negocios
+                                    <br><small style="color:var(--text-muted)">Prof. Carlos Mendoza</small>
+                                </td>
+                                <td>4</td>
+                                <td>Lun - Mie 19:00 - 21:00</td>
+                                <td><span class="badge badge-success">15 Dispo.</span></td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                                        <i class="fa-solid fa-plus"></i> Agregar
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>ASI902</strong></td>
+                                <td>
+                                    Arquitectura Empresarial
+                                    <br><small style="color:var(--text-muted)">Prof. Ana Torres</small>
+                                </td>
+                                <td>4</td>
+                                <td>Mar - Jue 18:00 - 20:00</td>
+                                <td><span class="badge badge-warning">3 Dispo.</span></td>
+                                <td>
+                                    <button class="btn btn-outline" disabled style="padding: 0.3rem 0.6rem; font-size: 0.8rem; opacity: 0.6;">
+                                        Inscrito
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>ASI903</strong></td>
+                                <td>
+                                    Gestión de Proyectos de TI
+                                    <br><small style="color:var(--text-muted)">Prof. Roberto Silva</small>
+                                </td>
+                                <td>4</td>
+                                <td>Vie 18:00 - 22:00</td>
+                                <td><span class="badge badge-success">8 Dispo.</span></td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                                        <i class="fa-solid fa-plus"></i> Agregar
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>ASI904</strong></td>
+                                <td>
+                                    Taller de Tesis II
+                                    <br><small style="color:var(--text-muted)">Prof. Elena Rostova</small>
+                                </td>
+                                <td>5</td>
+                                <td>Sab 08:00 - 13:00</td>
+                                <td><span class="badge badge-success">20 Dispo.</span></td>
+                                <td>
+                                    <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                                        <i class="fa-solid fa-plus"></i> Agregar
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Panel Derecho: Pre-Matrícula / Resumen -->
+            <aside class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <i class="fa-solid fa-cart-flatbed"></i>
+                        Resumen de Cursos
+                    </h2>
+                </div>
+
+                <ul class="selected-list">
+                    <li class="selected-item">
+                        <div class="course-details">
+                            <strong>Arquitectura Empresarial</strong>
+                            <span>ASI902 • 4 Créditos</span>
+                        </div>
+                        <button class="btn-danger-icon" title="Quitar curso">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </li>
+                    <li class="selected-item">
+                        <div class="course-details">
+                            <strong>Desarrollo Web Avanzado</strong>
+                            <span>ASI905 • 4 Créditos</span>
+                        </div>
+                        <button class="btn-danger-icon" title="Quitar curso">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </li>
+                    <li class="selected-item">
+                        <div class="course-details">
+                            <strong>Seguridad de la Información</strong>
+                            <span>ASI906 • 4 Créditos</span>
+                        </div>
+                        <button class="btn-danger-icon" title="Quitar curso">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="checkout-summary">
+                    <div class="summary-row">
+                        <span>Cursos seleccionados:</span>
+                        <strong>3</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total Créditos:</span>
+                        <strong>12 / 22</strong>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Estado:</span>
+                        <span style="color: var(--warning-color)">En Proceso</span>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" style="margin-top: 1.25rem;">
+                        <i class="fa-solid fa-check-circle"></i>
+                        Confirmar Matrícula
+                    </button>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
